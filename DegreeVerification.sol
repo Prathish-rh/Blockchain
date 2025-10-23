@@ -1,35 +1,37 @@
-pragma solidity ^0.8.0;
+// npm install web3
+const Web3 = require('web3');
+const web3 = new Web3(window.ethereum); // or new Web3("https://sepolia.infura.io/v3/YOUR_KEY");
 
-contract DegreeVerification {
-    struct Degree {
-        string studentName;
-        string degree;
-        string university;
-        uint256 year;
-        bool isIssued;
-    }
+const contractAddress = "0x...";
+const abi = [ /* ABI array here */ ];
+const contract = new web3.eth.Contract(abi, contractAddress);
 
-    mapping(string => Degree) public degrees; // Key = studentID
+// Example: issueDegree via MetaMask (owner)
+async function issueDegree() {
+  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  const owner = accounts[0];
 
-    event DegreeIssued(string studentID, string studentName, string degree, string university, uint256 year);
-    event DegreeVerified(string studentID, bool valid);
+  const receipt = await contract.methods.issueDegree(
+      "0xStudentAddressHere",
+      "Alice Example",
+      "B.Tech Computer Science",
+      "Example University",
+      2025,
+      "Qm...ipfsCID"
+    )
+    .send({ from: owner, gas: 300000 });
 
-    // Issue a new degree (University)
-    function issueDegree(string memory _studentID, string memory _studentName, string memory _degree, string memory _university, uint256 _year) public {
-        require(!degrees[_studentID].isIssued, "Degree already issued for this ID");
-        degrees[_studentID] = Degree(_studentName, _degree, _university, _year, true);
-        emit DegreeIssued(_studentID, _studentName, _degree, _university, _year);
-    }
+  console.log("Tx:", receipt.transactionHash);
+}
 
-    // Verify degree existence (Employer)
-    function verifyDegree(string memory _studentID) public view returns (bool) {
-        bool valid = degrees[_studentID].isIssued;
-        return valid;
-    }
+// verify
+async function verify(degreeId, studentAddr) {
+  const valid = await contract.methods.verifyDegree(degreeId, studentAddr).call();
+  console.log(valid);
+}
 
-    // Get full degree details
-    function getDegreeDetails(string memory _studentID) public view returns (string memory, string memory, string memory, uint256, bool) {
-        Degree memory d = degrees[_studentID];
-        return (d.studentName, d.degree, d.university, d.year, d.isIssued);
-    }
+// get details
+async function getDetails(degreeId) {
+  const d = await contract.methods.getDegreeDetails(degreeId).call();
+  console.log(d);
 }
