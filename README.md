@@ -27,3 +27,8 @@ This part manages **decentralized identities and verifiable credentials** using 
 mkdir ssi-identity
 cd ssi-identity
 npm init -y
+
+### **1.2 Install Dependencies (Option 2: Script)**
+
+Instead of running a long npm command, you can put all dependencies in a script file and run it.
+bash dependencies.sh
